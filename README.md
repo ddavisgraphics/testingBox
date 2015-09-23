@@ -16,6 +16,11 @@ The first search revealed that there wasn't an FFMPEG on the system.  I had to i
 
 ### Usage Example from StackOverflow
 
+There is a link that talks a little bit more about editing the video and changing formats.  It does a nice job of showing
+how to do the simple things.
+
+http://www.slideshare.net/ProdigyView/ffmpeg-basics-for-php-tutorial
+
 ```php
     //linux
     $commands = array(
