@@ -61,6 +61,8 @@
             // Test The Class and FFMPEG
             $ffmpeg = new FFMPEG($uploadFile);
             $metadata = $ffmpeg->getMetadata();
+            $editpath  = $editedFiles.DIRECTORY_SEPARATOR.$validFile->fileType.DIRECTORY_SEPARATOR;
+            $ffmpeg->convert($editpath."testEdit.flv"); // convert to flash
 
             print "<pre>";
             var_dump($ffmpeg);
