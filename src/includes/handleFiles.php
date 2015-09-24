@@ -1,31 +1,55 @@
 <?php
-    // Create a class for dealing with files of any type
-    require_once "../engineHeader.php";
-    // database info
-    $db        = db::get($localvars->get('dbConnectionName'));
-
-    Class ManageFileUploads{
-        // save directory
-        protected $directory;
-        protected $permissions = 0777;
-        protected $rootDir     = "/home/www.libraries.wvu.edu/uploads";
-
+   Class validateUpload {
         // get the posted file
         public $file        = array();
         protected $fileInfo = array();
-        protected $fileBinary;
 
         // validation stuff
         protected $maximumFileSize;
         protected $allowedFileTypes;
         protected $validFile;
+        public $fileType;
+        public $mimeType;
 
-
-        // tell where we want the file to save
         // get the basic info
-        public function __construct($file){
+        public function __construct($file, $mimeTypes = NULL, $maxFileSize = NULL){
             $this->file = $file;
-            $this->fileInfo = new finfo();
+
+            $defaultMimeTypeArray = array(
+                // audio
+                'audio/x-aiff',
+                'audio/basic',
+                'audio/x-mpegurl',
+                'audio/mid',
+                'audio/mpeg',
+                'audio/x-pn-realaudio',
+                'audio/aiff',
+                // video
+                'video/x-ms-asf',
+                'video/x-msvideo',
+                'video/x-la-asf',
+                'video/mpeg',
+                'video/quicktime',
+                'video/x-flv',
+                'video/mp4',
+                'video/MP2T',
+                'video/3gpp',
+                'video/x-ms-wmv'
+            );
+
+            // Set the Mime Types
+            if(isnull($mimeTypes)){
+                $this->allowedFileTypes = $defaultMimeTypeArray;
+            } else {
+                $this->setFileTypes($mimeTypes);
+            }
+
+            // Set the Max File Size
+            if(isnull($maxFileSize)){
+                $this->maximumFileSize = 2; // set to 2mb
+            } else {
+                $this->maxFileSize($maxFileSize);
+            }
         }
 
         // allow the file size to be set outside of the class
@@ -38,32 +62,48 @@
             $this->allowedFileTypes = $fileTypes;
         }
 
-        public function setBlob($blob){
-            $this->fileBinary = $blob;
-        }
-
-        public function saveFileToDirectory(){
-        }
-
-        // save the un-edited file for backup
-        // just add some basic information
-        public function saveOriginalToDB($database, $table){
-
-        }
-
         // return true or false for valid file
         public function isValid(){
-            if($this->validateMIME() && $this->validateSize()){
+            if($this->validateMIME() && $this->validateSize() && $this->validFileName()){
                 $this->validFile = TRUE;
+                return TRUE;
             }
             else {
                 $this->validFile = FALSE;
+                return FALSE;
             }
+        }
+
+        private function validFileName(){
+            if($this->checkUploadName() && $this->checkFileNameLength()){
+                return TRUE;
+            }
+            else {
+                return FALSE;
+            }
+        }
+
+        // grabbed concept from php documentation
+        // checks to make sure file doesn't have hidden junk in name
+        private function checkUploadName(){
+            $filename  = $this->file['name'];
+            $validName = (preg_match('`^[-0-9A-Z_\.]+$`i', $filename) ? TRUE : FALSE);
+            return $validName;
+        }
+
+        private function checkFileNameLength(){
+            $filename  = $this->file['name'];
+            $validNameLength = (strlen($filename) < 200 ? TRUE : FALSE);
+            return $validNameLength;
         }
 
         // valid mime types
         private function validateMIME(){
-            if(in_array($this->file['type'], $this->allowedFileTypes)){
+            $fileType = $this->file['type'];
+            $fileDetect = explode("/" , $fileType);
+            if(in_array($fileType, $this->allowedFileTypes)){
+                $this->mimeType = $fileType;
+                $this->fileType = $fileDetect[0];
                 return TRUE;
             }
             else{
@@ -73,10 +113,9 @@
 
         // valid size
         private function validateSize(){
-
             $this->fileSize = $this->bytesToMb($this->file['size']);
 
-            if($this->fileSize <= $this->maximumFileSize){
+            if($this->fileSize <= $this->maximumFileSize  && $this->fileSize > 0){
                 return TRUE;
             }
             else {
@@ -88,31 +127,5 @@
         private function bytesToMb($bytes){
             return round(($bytes / 1048576), 2);
         }
-
     }
-
-    $allowedMIME = array(
-        'video/x-flv',
-        'video/mp4',
-        'application/x-mpegURL',
-        'video/MP2T',
-        'video/3gpp',
-        'video/quicktime',
-        'video/x-msvideo',
-        'video/x-ms-wmv'
-    );
-
-    $file = $_FILES['fileUpload'];
-    $fileData = file_get_contents($_FILES['fileUpload']['tmp_name']);
-
-    $fileManager = new ManageFileUploads($file);
-    $fileManager->maxFileSize(2);
-    $fileManager->setFileTypes($allowedMIME);
-    $fileManager->isValid();
-    $fileManager->setBlob(file_get_contents($_FILES['fileUpload']['tmp_name']));
-
-
-    print "Everything above me is working!";
-
-
 ?>
