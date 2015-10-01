@@ -5,6 +5,10 @@ Searching the internet showcased that this library worked well for PHP as a way 
 
 - ffmpeg
 - ffmpegphp
+- 
+
+## Better Looking PHP Classes for using FFMPG
+- https://github.com/buggedcom/phpvideotoolkit-v2#phpvideotoolkit-output-formats 
 
 ### Installing FFMPEG
 The first search revealed that there wasn't an FFMPEG on the system.  I had to install the DAG Library and RPM packages.  This will install a good bit of dependencies and updates.
